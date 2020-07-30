@@ -70,9 +70,9 @@ class ConfigManager:
         "mod_color": str(discord.Color.green()),
         "mod_tag": None,
         # anonymous message
-        "anon_username": None,
+        "anon_username": Fx Community,
         "anon_avatar_url": None,
-        "anon_tag": "Response",
+        "anon_tag": "STAFF",
     }
 
     private_keys = {
