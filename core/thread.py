@@ -32,7 +32,7 @@ class Thread:
             self._recipient = None
         else:
             if recipient.bot:
-                raise CommandError("Recipient cannot be a bot.")
+                raise CommandError("El destinatario no puede ser un bot.")
             self._id = recipient.id
             self._recipient = recipient
         self._channel = channel
@@ -99,11 +99,11 @@ class Thread:
                 reason="Creating a thread channel.",
             )
         except discord.HTTPException as e:  # Failed to create due to missing perms.
-            logger.critical("An error occurred while creating a thread.", exc_info=True)
+            logger.critical("Se produjo un error al crear un hilo.", exc_info=True)
             self.manager.cache.pop(self.id)
 
             embed = discord.Embed(color=self.bot.error_color)
-            embed.title = "Error while trying to create a thread."
+            embed.title = "Error al intentar crear un hilo."
             embed.description = str(e)
             embed.add_field(name="Recipient", value=recipient.mention)
 
@@ -121,7 +121,7 @@ class Thread:
 
             log_count = sum(1 for log in log_data if not log["open"])
         except Exception:
-            logger.error("An error occurred while posting logs to the database.", exc_info=True)
+            logger.error("Se produjo un error al publicar registros en la base de datos.", exc_info=True)
             log_url = log_count = None
             # ensure core functionality still works
 
@@ -208,7 +208,7 @@ class Thread:
 
         created = str((time - user.created_at).days)
         embed = discord.Embed(
-            color=color, description=f"{user.mention} was created {days(created)}", timestamp=time
+            color=color, description=f"{user.mention} fue creado hace {days(created)}", timestamp=time
         )
 
         # if not role_names:
@@ -222,7 +222,7 @@ class Thread:
         if member is not None:
             joined = str((time - member.joined_at).days)
             # embed.add_field(name='Joined', value=joined + days(joined))
-            embed.description += f", joined {days(joined)}"
+            embed.description += f", se unió al servidor hace {days(joined)}"
 
             if member.nick:
                 embed.add_field(name="Nickname", value=member.nick, inline=True)
@@ -235,14 +235,14 @@ class Thread:
         if log_count is not None:
             # embed.add_field(name="Past logs", value=f"{log_count}")
             thread = "thread" if log_count == 1 else "threads"
-            embed.description += f" with **{log_count or 'no'}** past {thread}."
+            embed.description += f" y tiene **{log_count or 'no'}** hilos pasados."
         else:
             embed.description += "."
 
         mutual_guilds = [g for g in self.bot.guilds if user in g.members]
         if member is None or len(mutual_guilds) > 1:
             embed.add_field(
-                name="Mutual Server(s)", value=", ".join(g.name for g in mutual_guilds)
+                name="Servidores en común", value=", ".join(g.name for g in mutual_guilds)
             )
 
         return embed
@@ -262,7 +262,7 @@ class Thread:
         message: str = None,
         auto_close: bool = False,
     ) -> None:
-        """Close a thread now or after a set time in seconds"""
+        """Cerrar un hilo ahora o después de un tiempo establecido en segundos"""
 
         # restarts the after timer
         await self.cancel_closure(auto_close)
@@ -300,7 +300,7 @@ class Thread:
         try:
             self.manager.cache.pop(self.id)
         except KeyError as e:
-            logger.error("Thread already closed: %s.", e)
+            logger.error("Hilo ya cerrado: %s.", e)
             return
 
         await self.cancel_closure(all=True)
@@ -359,7 +359,7 @@ class Thread:
 
         embed.title = user
 
-        event = "Thread Closed as Scheduled" if scheduled else "Thread Closed"
+        event = "Hilo cerrado según lo programado" if scheduled else "Hilo cerrado"
         # embed.set_author(name=f"Event: {event}", url=log_url)
         embed.set_footer(text=f"{event} by {_closer}")
         embed.timestamp = datetime.utcnow()
@@ -464,13 +464,13 @@ class Thread:
                 or not message1.embeds[0].author.url
                 or message1.author != self.bot.user
             ):
-                raise ValueError("Malformed thread message.")
+                raise ValueError("Mensaje del hilo mal formado.")
 
         elif message_id is not None:
             try:
                 message1 = await self.channel.fetch_message(message_id)
             except discord.NotFound:
-                raise ValueError("Thread message not found.")
+                raise ValueError("Mensaje del hilo no encontrado.")
 
             if not (
                 message1.embeds
@@ -478,19 +478,19 @@ class Thread:
                 and message1.embeds[0].color
                 and message1.author == self.bot.user
             ):
-                raise ValueError("Thread message not found.")
+                raise ValueError("Mensaje del hilo no encontrado.")
 
             if message1.embeds[0].color.value == self.bot.main_color and message1.embeds[
                 0
             ].author.name.startswith("Note"):
                 if not note:
-                    raise ValueError("Thread message not found.")
+                    raise ValueError("Mensaje del hilo no encontrado.")
                 return message1, None
 
             if message1.embeds[0].color.value != self.bot.mod_color and not (
                 either_direction and message1.embeds[0].color.value == self.bot.recipient_color
             ):
-                raise ValueError("Thread message not found.")
+                raise ValueError("Mensaje del hilo no encontrado.")
         else:
             async for message1 in self.channel.history():
                 if (
@@ -509,12 +509,12 @@ class Thread:
                 ):
                     break
             else:
-                raise ValueError("Thread message not found.")
+                raise ValueError("Mensaje del hilo no encontrado.")
 
         try:
             joint_id = int(message1.embeds[0].author.url.split("#")[-1])
         except ValueError:
-            raise ValueError("Malformed thread message.")
+            raise ValueError("Mensaje del hilo mal formado.")
 
         async for msg in self.recipient.history():
             if either_direction:
@@ -534,7 +534,7 @@ class Thread:
         try:
             message1, message2 = await self.find_linked_messages(message_id)
         except ValueError:
-            logger.warning("Failed to edit message.", exc_info=True)
+            logger.warning("No se pudo editar el mensaje.", exc_info=True)
             raise
 
         embed1 = message1.embeds[0]
@@ -584,7 +584,7 @@ class Thread:
             msg_id = int(msg_id)
             if int(msg_id) == message.id:
                 return linked_message
-        raise ValueError("Thread channel message not found.")
+        raise ValueError("Mensaje del canal del hilo no encontrado.")
 
     async def edit_dm_message(self, message: discord.Message, content: str) -> None:
         try:
@@ -620,8 +620,8 @@ class Thread:
             return await message.channel.send(
                 embed=discord.Embed(
                     color=self.bot.error_color,
-                    description="Your message could not be delivered since "
-                    "the recipient shares no servers with the bot.",
+                    description="Su mensaje no se pudo entregar desde "
+                    "El destinatario no comparte servidores con el bot.",
                 )
             )
 
@@ -637,10 +637,10 @@ class Thread:
                 message.channel.send(
                     embed=discord.Embed(
                         color=self.bot.error_color,
-                        description="Your message could not be delivered as "
-                        "the recipient is only accepting direct "
-                        "messages from friends, or the bot was "
-                        "blocked by the recipient.",
+                        description="Su mensaje no pudo ser entregado como "
+                        "el destinatario solo acepta mensajes "
+                        "directo de amigos, o el bot sera "
+                        "bloqueado por el destinatario.",
                     )
                 )
             )
@@ -666,7 +666,7 @@ class Thread:
                     self.channel.send(
                         embed=discord.Embed(
                             color=self.bot.error_color,
-                            description="Scheduled close has been cancelled.",
+                            description="El cierre programado ha sido cancelado.",
                         )
                     )
                 )
@@ -695,7 +695,7 @@ class Thread:
                 self.channel.send(
                     embed=discord.Embed(
                         color=self.bot.error_color,
-                        description="Scheduled close has been cancelled.",
+                        description="El cierre programado ha sido cancelado.",
                     )
                 )
             )
