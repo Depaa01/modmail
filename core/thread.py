@@ -808,7 +808,7 @@ class Thread:
             embed.colour = self.bot.mod_color
             # Anonymous reply sent in thread channel
             if anonymous and isinstance(destination, discord.TextChannel):
-                embed.set_footer(text="Anonymous Reply")
+                embed.set_footer(text="Mensaje Anonimo")
             # Normal messages
             elif not anonymous:
                 mod_tag = self.bot.config["mod_tag"]
